@@ -9,6 +9,13 @@ from gammapy.stats.fit_statistics_cython import TRUNCATION_VALUE
 __all__ = ["cash", "cstat", "wstat", "get_wstat_mu_bkg", "get_wstat_gof_terms"]
 
 
+def gaussian_penality(penalised_parameters, penalising_invcovmatrix):
+    return np.matmul(
+        np.matmul(penalising_invcovmatrix, penalised_parameters.value),
+        penalised_parameters.value,
+    )
+
+
 def cash(n_on, mu_on, truncation_value=TRUNCATION_VALUE):
     r"""Cash statistic, for Poisson data.
 

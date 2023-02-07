@@ -15,7 +15,7 @@ from gammapy.stats import (
     WStatCountsStatistic,
     cash,
     cash_sum_cython,
-    gaussian_penality,
+    #gaussian_penality,
     get_wstat_mu_bkg,
     wstat,
 )
@@ -45,6 +45,12 @@ BINSZ_IRF_DEFAULT = 0.2
 EVALUATION_MODE = "local"
 USE_NPRED_CACHE = True
 
+
+def gaussian_penality(penalised_parameters, penalising_invcovmatrix):
+    return np.matmul(
+        np.matmul(penalising_invcovmatrix, penalised_parameters.value),
+        penalised_parameters.value,
+    )
 
 def create_map_dataset_geoms(
     geom,

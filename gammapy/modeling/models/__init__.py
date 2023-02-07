@@ -28,6 +28,7 @@ from .spectral import (
     ExpCutoffPowerLaw3FGLSpectralModel,
     ExpCutoffPowerLawNormSpectralModel,
     ExpCutoffPowerLawSpectralModel,
+    ExpCutoffPowerLawNuisanceSpectralModel,
     GaussianSpectralModel,
     LogParabolaNormSpectralModel,
     LogParabolaSpectralModel,

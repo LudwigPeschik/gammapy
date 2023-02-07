@@ -35,6 +35,7 @@ __all__ = [
     "ExpCutoffPowerLaw3FGLSpectralModel",
     "ExpCutoffPowerLawNormSpectralModel",
     "ExpCutoffPowerLawSpectralModel",
+    "ExpCutoffPowerLawNuisanceSpectralModel",
     "GaussianSpectralModel",
     "integrate_spectrum",
     "LogParabolaNormSpectralModel",
@@ -1743,6 +1744,74 @@ class ExpCutoffPowerLawSpectralModel(SpectralModel):
             return np.nan * reference.unit
         else:
             return np.power((2 - index) / alpha, 1 / alpha) / lambda_
+
+
+class ExpCutoffPowerLawNuisanceSpectralModel(SpectralModel):
+    r"""Spectral exponential cutoff power-law model.
+
+    For more information see :ref:`exp-cutoff-powerlaw-spectral-model`.
+
+    Parameters
+    ----------
+    index : `~astropy.units.Quantity`
+        :math:`\Gamma`
+    amplitude : `~astropy.units.Quantity`
+        :math:`\phi_0`
+    reference : `~astropy.units.Quantity`
+        :math:`E_0`
+    lambda_ : `~astropy.units.Quantity`
+        :math:`\lambda`
+    alpha : `~astropy.units.Quantity`
+        :math:`\alpha`
+
+    See Also
+    --------
+    ExpCutoffPowerLawNormSpectralModel
+    """
+
+    tag = ["ExpCutoffPowerLawNuisanceSpectralModel", "ecpln"]
+
+    index = Parameter("index", 1.5)
+    index_nuisance = Parameter("index_nuisance", 0, is_penalised=True)
+    amplitude = Parameter(
+        name="amplitude",
+        value="1e-12 cm-2 s-1 TeV-1",
+        scale_method="scale10",
+        interp="log",
+        is_norm=True,
+    )
+    amplitude_nuisance = Parameter("amplitude_nuisance", 0, is_penalised=True)
+    reference = Parameter("reference", "1 TeV", frozen=True)
+    lambda_ = Parameter("lambda_", "0.1 TeV-1")
+    alpha = Parameter("alpha", "1.0", frozen=True)
+
+    @staticmethod
+    def evaluate(energy, index, index_nuisance, amplitude, amplitude_nuisance, reference, lambda_, alpha):
+        """Evaluate the model (static function)."""
+        pwl = (1 + amplitude_nuisance) * amplitude * (energy / reference) ** (- (1 + index_nuisance) * index)
+        cutoff = np.exp(-np.power(energy * lambda_, alpha))
+
+        return pwl * cutoff
+
+    @property
+    def e_peak(self):
+        r"""Spectral energy distribution peak energy (`~astropy.units.Quantity`).
+
+        This is the peak in E^2 x dN/dE and is given by:
+
+        .. math::
+            E_{Peak} =  \left(\frac{2 - \Gamma}{\alpha}\right)^{1/\alpha} / \lambda
+        """
+        reference = self.reference.quantity
+        index = self.index.quantity
+        index_nuisance = self.index_nuisance.quantity
+        lambda_ = self.lambda_.quantity
+        alpha = self.alpha.quantity
+
+        if index >= 2 or lambda_ == 0.0 or alpha == 0.0:
+            return np.nan * reference.unit
+        else:
+            return np.power((2 - (1 + index_nuisance) * index) / alpha, 1 / alpha) / lambda_
 
 
 class ExpCutoffPowerLawNormSpectralModel(SpectralModel):
