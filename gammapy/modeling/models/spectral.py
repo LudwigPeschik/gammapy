@@ -1783,13 +1783,14 @@ class ExpCutoffPowerLawNuisanceSpectralModel(SpectralModel):
     amplitude_nuisance = Parameter("amplitude_nuisance", 0, is_penalised=True)
     reference = Parameter("reference", "1 TeV", frozen=True)
     lambda_ = Parameter("lambda_", "0.1 TeV-1")
+    lambda__nuisance = Parameter("lambda__nuisance", 0, is_penalised=True)
     alpha = Parameter("alpha", "1.0", frozen=True)
 
     @staticmethod
-    def evaluate(energy, index, index_nuisance, amplitude, amplitude_nuisance, reference, lambda_, alpha):
+    def evaluate(energy, index, index_nuisance, amplitude, amplitude_nuisance, reference, lambda_, lambda__nuisance, alpha):
         """Evaluate the model (static function)."""
-        pwl = (1 + amplitude_nuisance) * amplitude * (energy / reference) ** (- (1 + index_nuisance) * index)
-        cutoff = np.exp(-np.power(energy * lambda_, alpha))
+        pwl = (1 + amplitude_nuisance) * amplitude * np.power(energy / reference,  (- (1 + index_nuisance) * index))
+        cutoff = np.exp(-np.power(energy * (1 + lambda__nuisance) * lambda_, alpha))
 
         return pwl * cutoff
 
@@ -1806,12 +1807,13 @@ class ExpCutoffPowerLawNuisanceSpectralModel(SpectralModel):
         index = self.index.quantity
         index_nuisance = self.index_nuisance.quantity
         lambda_ = self.lambda_.quantity
+        lambda__nuisance = self.lambda__nuisance.quantity
         alpha = self.alpha.quantity
 
         if index >= 2 or lambda_ == 0.0 or alpha == 0.0:
             return np.nan * reference.unit
         else:
-            return np.power((2 - (1 + index_nuisance) * index) / alpha, 1 / alpha) / lambda_
+            return np.power((2 - (1 + index_nuisance) * index) / alpha, 1 / alpha) / ((1 + lambda__nuisance) * lambda_)
 
 
 class ExpCutoffPowerLawNormSpectralModel(SpectralModel):
