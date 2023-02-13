@@ -4,6 +4,7 @@ from gammapy.utils.registry import Registry
 from .core import DatasetModels, Model, ModelBase, Models
 from .cube import (
     FoVBackgroundModel,
+    IRFModel,
     SkyModel,
     TemplateNPredModel,
     create_fermi_isotropic_diffuse_model,
@@ -20,7 +21,7 @@ from .spatial import (
     SpatialModel,
     TemplateSpatialModel,
 )
-from .spectral import (
+from .spectral import (  # PowerLawNormNuisanceSpectralModel,
     BrokenPowerLawSpectralModel,
     CompoundSpectralModel,
     ConstantSpectralModel,
@@ -34,11 +35,8 @@ from .spectral import (
     NaimaSpectralModel,
     PiecewiseNormSpectralModel,
     PowerLaw2SpectralModel,
-    PowerLawNormNuisanceESpectralModel,
-    PowerLawNormNuisanceSpectralModel,
+    PowerLawNormPenSpectralModel,
     PowerLawNormSpectralModel,
-    PowerLawNuisanceESpectralModel,
-    PowerLawNuisanceSpectralModel,
     PowerLawSpectralModel,
     ScaleNuisanceSpectralModel,
     ScaleSpectralModel,
@@ -105,9 +103,8 @@ __all__ = [
     "PointSpatialModel",
     "PowerLaw2SpectralModel",
     "PowerLawNormSpectralModel",
-    "PowerLawNormNuisanceSpectralModel",
-    "PowerLawNormNuisanceESpectralModel",
-    "PowerLawNuisanceESpectralModel",
+    # "PowerLawNormNuisanceSpectralModel",
+    # "PowerLawNormNuisanceESpectralModel",
     "PowerLawSpectralModel",
     "PowerLawTemporalModel",
     "scale_plot_flux",
@@ -171,8 +168,7 @@ SPECTRAL_MODEL_REGISTRY = Registry(
         ScaleSpectralModel,
         ScaleNuisanceSpectralModel,
         PowerLawNormSpectralModel,
-        PowerLawNormNuisanceSpectralModel,
-        PowerLawNuisanceSpectralModel,
+        # PowerLawNormNuisanceSpectralModel,
         LogParabolaNormSpectralModel,
         ExpCutoffPowerLawNormSpectralModel,
     ]

@@ -5,7 +5,7 @@ from gammapy.datasets import Datasets
 from gammapy.estimators.parameter import ParameterEstimator
 from gammapy.maps import Map, MapAxis
 from gammapy.modeling import Parameter, Parameters
-from gammapy.modeling.models import ScaleNuisanceSpectralModel, ScaleSpectralModel
+from gammapy.modeling.models import Models, ScaleSpectralModel
 
 log = logging.getLogger(__name__)
 
@@ -99,55 +99,6 @@ class FluxEstimator(ParameterEstimator):
         norm.scan_n_values = self.norm_n_values
         return norm
 
-    def _set_norm_nuisance_parameter(self, parameter):
-        """Define properties of the norm spectral parameter."""
-        norm_nuisance = Parameter(
-            "norm_nuisance", 0, unit="", interp="lin", is_penalised=True
-        )
-
-        return norm_nuisance
-
-    def get_scale_nuisance_model(self, models):
-        """Set scale model
-
-        Parameters
-        ----------
-        models : `Models`
-            Models
-
-        Returns
-        -------
-        model : `ScaleSpectralModel`
-            Scale spectral model
-        """
-        ref_model = models[self.source].spectral_model
-
-        if ref_model.is_norm_spectral_model:
-            raise ValueError(
-                "Instances of `NormSpectralModel` are not supported for flux point estimation."
-            )
-
-        scale_model = ScaleNuisanceSpectralModel(ref_model)
-
-        norms = Parameters([p for p in ref_model.parameters if p.is_norm])
-        if len(norms) == 0 or len(norms.free_parameters) > 1:
-            raise ValueError(
-                f"{self.tag} requires one and only one free 'norm' or 'amplitude' parameter"
-                " in the model to run"
-            )
-        elif len(norms.free_parameters) == 1:
-            norms = norms.free_parameters
-        scale_model.norm = self._set_norm_parameter(scale_model.norm, norms[0])
-
-        penalised_parameters = Parameters(
-            [p for p in ref_model.parameters if p.is_penalised]
-        )
-        scale_model.norm_nuisance = self._set_norm_nuisance_parameter(
-            penalised_parameters[0]
-        )
-
-        return scale_model
-
     def get_scale_model(self, models):
         """Set scale model
 
@@ -221,12 +172,9 @@ class FluxEstimator(ParameterEstimator):
             Dict with results for the flux point.
         """
         datasets = Datasets(datasets)
-        models = datasets.models.copy()
+        models = Models(datasets.models.copy())
 
-        if len(datasets.parameters.penalised_parameters) > 0:
-            model = self.get_scale_nuisance_model(models)
-        else:
-            model = self.get_scale_model(models)
+        model = self.get_scale_model(models)
 
         energy_min, energy_max = datasets.energy_ranges
         energy_axis = MapAxis.from_energy_edges([energy_min.min(), energy_max.max()])
@@ -241,6 +189,5 @@ class FluxEstimator(ParameterEstimator):
         result.update(super().run(datasets, model.norm))
 
         datasets.models[self.source].spectral_model.norm.value = result["norm"]
-        print("flux: len pen par:", len(datasets.parameters.penalised_parameters))
         result.update(self.estimate_npred_excess(datasets=datasets))
         return result
