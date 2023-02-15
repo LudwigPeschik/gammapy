@@ -452,13 +452,12 @@ class MapDataset(Dataset):
         npred_total.data[npred_total.data < 0.0] = 0
         return npred_total
 
-    def npred_irf(self):
-        """Predicted irf map
+    def npred_exposure(self):
+        """Predicted exposure map
 
         Returns
         -------
-        npred_background : `Map`
-            Predicted counts from the background.
+        exposure : `Map`
         """
         exposure = self.exposure
         if self.irf_model and exposure:
@@ -472,6 +471,27 @@ class MapDataset(Dataset):
         else:
             return exposure
         return exposure
+
+    def npred_edisp(self):
+        """Predicted edisp map
+
+        Returns
+        -------
+        irf : `Map`
+        """
+        edisp = self.edisp
+        if self.irf_model and edisp:
+            if self._irf_parameters_changed:
+                edisp_kernel = edisp.get_edisp_kernel()
+                gaussian = self.irf_model.evaluate_gaussian(
+                    energy_axis_true=edisp_kernel.axes["energy_true"],
+                    energy_axis=edisp_kernel.axes["energy_true"],
+                )
+                edisp_kernel.data = np.matmul(edisp_kernel.data, gaussian.data)
+            return EDispKernelMap.from_edisp_kernel(edisp_kernel)
+        else:
+            return edisp
+        return edisp
 
     def npred_background(self):
         """Predicted background counts
@@ -551,11 +571,12 @@ class MapDataset(Dataset):
                 )
 
             if self.irf_model is not None and self._irf_parameters_changed:
-                exposure = self.npred_irf()
+                exposure = self.npred_exposure()
+                edisp = self.npred_edisp()
                 evaluator.update(
                     exposure,
                     self.psf,
-                    self.edisp,
+                    edisp,
                     self._geom,
                     self.mask_image,
                 )

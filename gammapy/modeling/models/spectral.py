@@ -184,7 +184,6 @@ class SpectralModel(ModelBase):
         for idx, parameter in enumerate(self.parameters):
             if parameter.frozen or eps[idx] == 0:
                 continue
-            print(parameter.name)
             parameter.value += eps[idx]
             df = fct(**kwargs) - f_0
 
