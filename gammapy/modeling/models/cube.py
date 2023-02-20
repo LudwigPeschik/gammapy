@@ -42,6 +42,7 @@ class IRFModel(ModelBase):
 
     bias = Parameter("bias", "0", is_penalised=True)
     resolution = Parameter("resolution", "0", is_penalised=True)
+
     tag = ["IRFModel", "irf"]
 
     def __init__(self, spectral_model=None, dataset_name=None):
@@ -58,8 +59,8 @@ class IRFModel(ModelBase):
 
         self._spectral_model = spectral_model
 
-        self.bias = Parameter("bias", "1e-12", is_penalised=True)
-        self.resolution = Parameter("resolution", "1e-12", is_penalised=True)
+        self.bias = Parameter("bias", "0", is_penalised=True)
+        self.resolution = Parameter("resolution", "0", is_penalised=True)
 
         super().__init__()
 
@@ -117,7 +118,7 @@ class IRFModel(ModelBase):
         gaussian = EDispKernel.from_gauss(
             energy_axis_true=energy_axis_true,
             energy_axis=energy_axis,
-            sigma=self.resolution.value,
+            sigma=(1e-7 + self.resolution.value),
             bias=self.bias.value,
         )
         return gaussian

@@ -384,6 +384,8 @@ class DatasetModels(collections.abc.Sequence):
         for model in self:
             for par in model.parameters:
                 components = [model.name, par.type, par.name]
+                if par.type is None:
+                    components[1] = "None"
                 name = ".".join(components)
                 names.append(name)
 

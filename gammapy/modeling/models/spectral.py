@@ -2437,3 +2437,4 @@ class GaussianSpectralModel(SpectralModel):
         return a * (np.exp(-(u_min**2)) - np.exp(-(u_max**2))) + b * (
             scipy.special.erf(u_max) - scipy.special.erf(u_min)
         )
+
