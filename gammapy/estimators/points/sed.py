@@ -6,6 +6,7 @@ from astropy.table import Table
 from gammapy.datasets import Datasets
 from gammapy.maps import MapAxis
 from gammapy.modeling import Fit
+from gammapy.modeling.models import Models
 from gammapy.utils.pbar import progress_bar
 from ..flux import FluxEstimator
 from .core import FluxPoints
@@ -147,6 +148,8 @@ class FluxPointsEstimator(FluxEstimator):
         result : dict
             Dict with results for the flux point.
         """
+        print()
+        print(energy_min, energy_max)
         datasets_sliced = datasets.slice_by_energy(
             energy_min=energy_min, energy_max=energy_max
         )
@@ -156,7 +159,8 @@ class FluxPointsEstimator(FluxEstimator):
             )
 
         if len(datasets_sliced) > 0:
-            datasets_sliced.models = datasets.models.copy()
+            models = Models(datasets.models.copy())
+            datasets_sliced.models = models
             return super().run(datasets=datasets_sliced)
         else:
             log.warning(f"No dataset contribute in range {energy_min}-{energy_max}")

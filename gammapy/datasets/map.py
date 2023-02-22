@@ -485,8 +485,10 @@ class MapDataset(Dataset):
             if self._irf_parameters_changed:
                 edisp_kernel = edisp.get_edisp_kernel()
                 gaussian = self.irf_model.evaluate_gaussian(
-                    energy_axis_true=edisp_kernel.axes["energy_true"],
-                    energy_axis=edisp_kernel.axes["energy_true"],
+                    energy_axis_true=edisp_kernel.axes["energy"].copy(
+                        name="energy_true"
+                    ),
+                    energy_axis=edisp_kernel.axes["energy"],
                 )
                 edisp_kernel.data = np.matmul(edisp_kernel.data, gaussian.data)
             return EDispKernelMap.from_edisp_kernel(edisp_kernel)
